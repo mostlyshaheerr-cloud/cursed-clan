@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursed Clan Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        input, button {
+            padding: 5px;
+            margin: 5px 0;
+        }
+        .message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .taken-numbers {
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Cursed Clan!</h1>
+    <form id="clanForm">
+        <label for="username">Enter your username:</label><br>
+        <input type="text" id="username" required><br>
+        <label for="number">Choose your number:</label><br>
+        <input type="number" id="number" min="0" required><br>
+        <button type="submit">Join Clan</button>
+    </form>
+
+    <div class="message" id="message"></div>
+    <div class="taken-numbers" id="takenNumbersDiv"></div>
+    <div class="members" id="members"></div>
+
+    <script>
+        // Pre-existing taken numbers
+        const takenNumbers = [0, 1, 61, 36, 45, 42, 18, 88, 41, 2, 67, 10, 9, 99, 76, 60, 5, 69, 3, 27];
+
+        // Load clan members from localStorage or initialize empty
+        let clanMembers = JSON.parse(localStorage.getItem("clanMembers")) || {};
+
+        const form = document.getElementById("clanForm");
+        const messageDiv = document.getElementById("message");
+        const membersDiv = document.getElementById("members");
+        const takenNumbersDiv = document.getElementById("takenNumbersDiv");
+
+        // Display taken numbers
+        function displayTakenNumbers() {
+            let numbers = [...takenNumbers, ...Object.values(clanMembers)];
+            takenNumbersDiv.innerHTML = `<p>Already taken numbers: ${numbers.join(', ')}</p>`;
+        }
+
+        // Function to display members
+        function displayMembers() {
+            if (Object.keys(clanMembers).length === 0) {
+                membersDiv.innerHTML = "<p>No members yet.</p>";
+                return;
+            }
+            let membersList = "<h2>Current Clan Members:</h2><ul>";
+            for (const user in clanMembers) {
+                membersList += `<li>${user} -> ${clanMembers[user]}</li>`;
+            }
+            membersList += "</ul>";
+            membersDiv.innerHTML = membersList;
+        }
+
+        // Display members and taken numbers on page load
+        displayMembers();
+        displayTakenNumbers();
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value.trim();
+            const number = parseInt(document.getElementById("number").value, 10);
+
+            if (!username) {
+                messageDiv.textContent = "Please enter a username.";
+                return;
+            }
+
+            if (isNaN(number) || number < 0) {
+                messageDiv.textContent = "Please enter a valid positive number.";
+                return;
+            }
+
+            if (takenNumbers.includes(number) || Object.values(clanMembers).includes(number)) {
+                messageDiv.textContent = "Number is already taken. Choose another number.";
+                return;
+            }
+
+            clanMembers[username] = number;
+            localStorage.setItem("clanMembers", JSON.stringify(clanMembers)); // save persistently
+            messageDiv.textContent = `Number ${number} assigned to ${username}!`;
+
+            displayMembers();
+            displayTakenNumbers();
+            form.reset();
+        });
+    </script>
+</body>
+</html>
